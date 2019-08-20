@@ -1,5 +1,6 @@
 from django.shortcuts import render
-
+from django.views.generic import View
+from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
@@ -8,6 +9,7 @@ from rest_framework import status
 from .models import employees
 from .serializers import employeesSerializer
 import json
+import os 
 class employeeList(APIView):
     def get(self,request):
         objectQuerySet = employees.objects.all()
@@ -36,9 +38,30 @@ class employeeList(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        return Response(data)
+        return Response(request.data)
 
     def delete(self, request,id):
         employee = get_object_or_404(employees.objects.all(), id=id)
         employee.delete()
         return Response({"message": "Employee with id `{}` has been deleted.".format(id)},status=200)
+
+
+
+# Create your views here.
+def index(request):
+    return HttpResponse("Hello world 2")
+
+class ReactAppView(View):
+
+    def get(self, request):
+        try:
+            with open(os.path.join(settings.REACT_APP, 'build', 'index.html')) as file:
+                return HttpResponse(file.read())
+
+        except :
+            return HttpResponse(
+                """
+                index.html not found ! build your React app !!
+                """,
+                status=501,
+            )
